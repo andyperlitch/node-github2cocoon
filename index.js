@@ -15,8 +15,8 @@ function factory(root, options) {
     // Store the username
     var username = options.username;
 
-    // Ensure that root starts with a leading slash
-    root = root.replace(/^\/*/, '/');
+    // Ensure that root starts and ends with a slash
+    root = root.replace(/^\/*/, '/').replace(/\/*$/, '/');
 
     // RegEx to test paths
     var exp = new RegExp('^' + root + '([^\/]+)/([^\/]+)');
