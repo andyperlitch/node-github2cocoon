@@ -1,6 +1,6 @@
 {
   "name": "github2cocoon",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Express.js middleware to use a github repository/branch as a zip file endpoint for the CocoonJS Launcher.",
   "main": "index.js",
   "scripts": {
