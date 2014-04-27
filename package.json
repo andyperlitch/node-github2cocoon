@@ -1,0 +1,32 @@
+{
+  "name": "github2cocoon",
+  "version": "0.0.0",
+  "description": "Express.js middleware to use a github repository/branch as a zip file endpoint for the CocoonJS Launcher.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/andyperlitch/node-github2cocoon.git"
+  },
+  "keywords": [
+    "cocoonjs",
+    "github",
+    "archive",
+    "zip",
+    "ludei",
+    "launcher"
+  ],
+  "author": "Andy Perlitch <andyperlitch@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/andyperlitch/node-github2cocoon/issues"
+  },
+  "homepage": "https://github.com/andyperlitch/node-github2cocoon",
+  "dependencies": {
+    "archiver": "^0.9.0",
+    "request": "^2.34.0",
+    "unzip": "^0.1.9"
+  }
+}
