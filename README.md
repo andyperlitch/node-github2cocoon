@@ -11,6 +11,8 @@ npm install --save github2cocoon
 usage
 -----
 
+### with predefined username
+This is the simplest use-case: when you only want to get zip archives from a single github user account (your own).
 ```JavaScript
 var express = require('express');
 var app = express();
@@ -24,6 +26,9 @@ Then, put your server's endpoint url into the Launcher:
 ![CocoonJS Launcher screenshot](/screenshot.png)
 
 Notice how the URL is `http://yourserver.com/[ROOT_DIR]/[REPO_URL]/[BRANCH_NAME].zip`.
+
+### without a predefined username
+Simply leave out the `username` option and the endpoints will be in the format: `http://yourserver.com/[ROOT_DIR]/[USERNAME]/[REPO_URL]/[BRANCH_NAME].zip`
 
 
 motivation

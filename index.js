@@ -8,18 +8,18 @@ function factory(root, options) {
         throw new Error('root path required (first argument, e.g.: app.use(github2cocoon("/ludei_zips/", { username: "andyperlitch" }));');
     }
 
-    if (!options || !options.username) {
-        throw new Error('you must provide a github username, e.g.: app.use(github2cocoon("/ludei_zips/", { username: "andyperlitch" }));');
-    }
+    options = options || {};
 
-    // Store the username
-    var username = options.username;
+    // Store predefined username
+    var predefined_user = options.username || false;
 
     // Ensure that root starts and ends with a slash
     root = root.replace(/^\/*/, '/').replace(/\/*$/, '/');
 
     // RegEx to test paths
-    var exp = new RegExp('^' + root + '([^\/]+)/([^\/]+)');
+    var exp = predefined_user
+        ? new RegExp('^' + root + '([^\/]+)/([^\/]+)') 
+        : new RegExp('^' + root + '([^\/]+)/([^\/]+)/([^\/]+)');
 
     return function(req, res, next) {
 
@@ -31,9 +31,17 @@ function factory(root, options) {
             return next();
         }
 
-        // repo, branch
-        var repo = result[1];
-        var branch = result[2];
+        // username, repo, branch
+        var username, repo, branch;
+        if (predefined_user) {
+            username = predefined_user;
+            repo = result[1];
+            branch = result[2];
+        } else {
+            username = result[1];
+            repo = result[2];
+            branch = result[3];
+        }
 
         // The archive stream
         var archive = archiver('zip');
