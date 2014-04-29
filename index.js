@@ -44,7 +44,16 @@ function factory(root, options) {
         }
 
         // The archive stream
-        var archive = archiver('zip');
+        var archive = archiver('zip', {
+            // Pass options to underlying
+            // zlib library
+            zlib: {
+                // Set this higher than default,
+                // cocoon launcher complains a lot
+                // otherwise
+                chunkSize: 32*1024
+            }
+        });
 
         // Will hold name of parent directory
         var rootDirName;
