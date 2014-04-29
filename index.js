@@ -48,10 +48,8 @@ function factory(root, options) {
             // Pass options to underlying
             // zlib library
             zlib: {
-                // Set this higher than default,
-                // cocoon launcher complains a lot
-                // otherwise
-                chunkSize: 32*1024,
+                // Set this higher than default, cocoon launcher complains a lot
+                // otherwise. This could use some tweaking
                 windowBits: 14, 
                 memLevel: 7
             }
