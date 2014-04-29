@@ -51,7 +51,9 @@ function factory(root, options) {
                 // Set this higher than default,
                 // cocoon launcher complains a lot
                 // otherwise
-                chunkSize: 32*1024
+                chunkSize: 32*1024,
+                windowBits: 14, 
+                memLevel: 7
             }
         });
 
