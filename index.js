@@ -1,3 +1,4 @@
+var fs = require('fs');
 var unzip = require('unzip');
 var request = require('request');
 var archiver = require('archiver');
@@ -15,6 +16,9 @@ function factory(root, options) {
 
     // Ensure that root starts and ends with a slash
     root = root.replace(/^\/*/, '/').replace(/\/*$/, '/');
+
+    // Define location for temporary zip files
+    var tmp_dir = options.tmp_dir || '/tmp';
 
     // RegEx to test paths
     var exp = predefined_user
@@ -58,29 +62,38 @@ function factory(root, options) {
         // Will hold name of parent directory
         var rootDirName;
 
-        // Get input, pipe to unzip utility
-        var input = request('https://github.com/' + username + '/' + repo + '/archive/' + branch).pipe(unzip.Parse());
+        // Get input, pipe to file
+        var local_file_location = tmp_dir + '/' + username + '-' + repo + '-' + branch + '-' + Date.now() + '.zip';
+        var local_file = fs.createWriteStream(local_file_location);
+        var input = request('https://github.com/' + username + '/' + repo + '/archive/' + branch).pipe(local_file);
 
-        // Pass all but our parent directory to
-        // archiver.
-        input.on('entry', function(entry) {
-            var filepath = entry.path;
-            if (!rootDirName) {
-                rootDirName = filepath;
-                entry.autodrain();    
-            } else {
-                // Strip name of parent dir
-                archive.append(entry, { name: entry.path.replace(rootDirName, '') });
-            }
-        });
-
-        // Finalize the archive when input has closed.
         input.on('close', function() {
-            archive.finalize();
-        });
+            
+            var output = fs.createReadStream(local_file_location)
+            // .pipe(unzip.Parse());
 
-        // Emit to response
-        archive.pipe(res);
+            // // Pass all but our parent directory to
+            // // archiver.
+            // output.on('entry', function(entry) {
+            //     var filepath = entry.path;
+            //     if (!rootDirName) {
+            //         rootDirName = filepath;
+            //         entry.autodrain();
+            //     } else {
+            //         // Strip name of parent dir
+            //         archive.append(entry, { name: entry.path.replace(rootDirName, '') });
+            //     }
+            // });
+
+            // // Finalize the archive when input has closed.
+            // output.on('close', function() {
+            //     archive.finalize();
+            // });
+
+            // // Emit to response
+            // archive.pipe(res);
+            output.pipe(res);
+        });
     }
 
 }
