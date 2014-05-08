@@ -1,7 +1,9 @@
 var fs = require('fs');
+var fstream = require('fstream');
 var unzip = require('unzip');
 var request = require('request');
 var archiver = require('archiver');
+var exec = require('child_process').exec;
 
 function factory(root, options) {
 
@@ -51,12 +53,12 @@ function factory(root, options) {
         var archive = archiver('zip', {
             // Pass options to underlying
             // zlib library
-            zlib: {
-                // Set this higher than default, cocoon launcher complains a lot
-                // otherwise. This could use some tweaking
-                windowBits: 14, 
-                memLevel: 7
-            }
+            // zlib: {
+            //     // Set this higher than default, cocoon launcher complains a lot
+            //     // otherwise. This could use some tweaking
+            //     windowBits: 14, 
+            //     memLevel: 7
+            // }
         });
 
         // Will hold name of parent directory
@@ -67,32 +69,13 @@ function factory(root, options) {
         var local_file = fs.createWriteStream(local_file_location);
         var input = request('https://github.com/' + username + '/' + repo + '/archive/' + branch).pipe(local_file);
 
+        // PROBLEM AREA: UNZIPPED ARCHIVE DOES NOT GET CREATED
         input.on('close', function() {
-            
-            var output = fs.createReadStream(local_file_location)
-            // .pipe(unzip.Parse());
-
-            // // Pass all but our parent directory to
-            // // archiver.
-            // output.on('entry', function(entry) {
-            //     var filepath = entry.path;
-            //     if (!rootDirName) {
-            //         rootDirName = filepath;
-            //         entry.autodrain();
-            //     } else {
-            //         // Strip name of parent dir
-            //         archive.append(entry, { name: entry.path.replace(rootDirName, '') });
-            //     }
-            // });
-
-            // // Finalize the archive when input has closed.
-            // output.on('close', function() {
-            //     archive.finalize();
-            // });
-
-            // // Emit to response
-            // archive.pipe(res);
-            output.pipe(res);
+            console.log('unzip -o ' + local_file_location);
+            var child = exec('unzip -o ' + local_file_location, function(err, stdout, stderr) {
+                console.log('stdout: ', stdout);
+                console.log('stderr: ', stderr);
+            });
         });
     }
 

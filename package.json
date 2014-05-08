@@ -25,7 +25,9 @@
   },
   "homepage": "https://github.com/andyperlitch/node-github2cocoon",
   "dependencies": {
+    "archive": "0.0.2",
     "archiver": "^0.9.0",
+    "fstream": "^0.1.25",
     "request": "^2.34.0",
     "unzip": "^0.1.9"
   }
