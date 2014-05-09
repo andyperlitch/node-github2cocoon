@@ -1,9 +1,8 @@
 var fs = require('fs');
-var fstream = require('fstream');
-var unzip = require('unzip');
 var request = require('request');
 var archiver = require('archiver');
 var exec = require('child_process').exec;
+var findit = require('findit');
 
 function factory(root, options) {
 
@@ -27,6 +26,13 @@ function factory(root, options) {
         ? new RegExp('^' + root + '([^\/]+)/([^\/]+)') 
         : new RegExp('^' + root + '([^\/]+)/([^\/]+)/([^\/]+)');
 
+
+    function log() {
+        if (options.debug) {
+            console.log.call(console, arguments);
+        }
+    }
+
     return function(req, res, next) {
 
         var url = req.url;
@@ -49,34 +55,53 @@ function factory(root, options) {
             branch = result[3];
         }
 
+        log('[' + new Date().toString() + '] Zip file requested for: github.com/' + username + '/' + repo + '/archive/' + branch );
+
         // The archive stream
-        var archive = archiver('zip', {
-            // Pass options to underlying
-            // zlib library
-            // zlib: {
-            //     // Set this higher than default, cocoon launcher complains a lot
-            //     // otherwise. This could use some tweaking
-            //     windowBits: 14, 
-            //     memLevel: 7
-            // }
-        });
+        var archive = archiver('zip');
 
         // Will hold name of parent directory
         var rootDirName;
 
         // Get input, pipe to file
-        var local_file_location = tmp_dir + '/' + username + '-' + repo + '-' + branch + '-' + Date.now() + '.zip';
-        var local_file = fs.createWriteStream(local_file_location);
-        var input = request('https://github.com/' + username + '/' + repo + '/archive/' + branch).pipe(local_file);
+        var local_file_location = tmp_dir + '/' + username + '-' + repo + '-' + branch + '-' + Date.now();
+        var local_file = fs.createWriteStream(local_file_location + '.zip');
+        var ghURL = 'https://github.com/' + username + '/' + repo + '/archive/' + branch;
+        var input = request(ghURL).pipe(local_file);
+        log('...requesting: ' + ghURL);
+        log('...saving to location: ' + local_file_location + '.zip');
 
         // PROBLEM AREA: UNZIPPED ARCHIVE DOES NOT GET CREATED
         input.on('close', function() {
-            console.log('unzip -o ' + local_file_location);
-            var child = exec('unzip -o ' + local_file_location, function(err, stdout, stderr) {
-                console.log('stdout: ', stdout);
-                console.log('stderr: ', stderr);
+            var cmd = 'unzip -o -d ' + tmp_dir + ' ' + local_file_location + '.zip';
+            log('...executing: ' + cmd);
+            var child = exec(cmd, function(err, stdout, stderr) {
+                if (!err) {
+                    // Walk the new file
+                    var findDir = (repo + '-' + branch).replace(/\.zip$/, '');
+
+                    log('...creating finder for dir: ' + findDir);
+                    var finder = findit(findDir);
+                    var expr = new RegExp('^' + findDir + '/');
+                    finder.on('file', function (file, stat) {
+                        archive.append(fs.createReadStream(file), { name: file.replace(expr,'') });
+                    });
+                    finder.on('end', function() {
+                        log('...zip is finalizing');
+                        archive.finalize();
+                    });
+
+                } else {
+                    console.warn('...ERROR! unzip command errored: ' + stderr);
+                    res.status(500);
+                    res.end();
+                }
             });
         });
+
+        // Pipe archive to output
+        log('...piping archive to response');
+        archive.pipe(res);
     }
 
 }
