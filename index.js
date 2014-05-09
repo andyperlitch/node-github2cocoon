@@ -58,7 +58,16 @@ function factory(root, options) {
         log('[' + new Date().toString() + '] Zip file requested for: github.com/' + username + '/' + repo + '/archive/' + branch );
 
         // The archive stream
-        var archive = archiver('zip');
+        var archive = archiver('zip', {
+            // Pass options to underlying
+            // zlib library
+            zlib: {
+                // Set this higher than default, cocoon launcher complains a lot
+                // otherwise. This could use some tweaking
+                windowBits: 14, 
+                memLevel: 7
+            }
+        });
 
         // Will hold name of parent directory
         var rootDirName;
