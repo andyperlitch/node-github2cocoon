@@ -25,6 +25,6 @@
   },
   "homepage": "https://github.com/andyperlitch/node-github2cocoon",
   "dependencies": {
-    "request": "^2.34.0",
+    "request": "^2.34.0"
   }
 }
