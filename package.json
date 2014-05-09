@@ -25,10 +25,6 @@
   },
   "homepage": "https://github.com/andyperlitch/node-github2cocoon",
   "dependencies": {
-    "archive": "0.0.2",
-    "archiver": "^0.9.0",
-    "findit": "^1.2.0",
     "request": "^2.34.0",
-    "walk": "^2.3.1"
   }
 }

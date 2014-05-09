@@ -1,8 +1,7 @@
+var path = require('path');
 var fs = require('fs');
 var request = require('request');
-var archiver = require('archiver');
 var exec = require('child_process').exec;
-var findit = require('findit');
 
 function factory(root, options) {
 
@@ -57,25 +56,10 @@ function factory(root, options) {
 
         log('[' + new Date().toString() + '] Zip file requested for: github.com/' + username + '/' + repo + '/archive/' + branch );
 
-        // The archive stream
-        var archive = archiver('zip', {
-            // Pass options to underlying
-            // zlib library
-            zlib: {
-                // Set this higher than default, cocoon launcher complains a lot
-                // otherwise. This could use some tweaking
-                windowBits: 14, 
-                memLevel: 7
-            }
-        });
-
-        // Will hold name of parent directory
-        var rootDirName;
-
         // Get input, pipe to file
         var local_file_location = tmp_dir + '/' + username + '-' + repo + '-' + branch + '-' + Date.now();
         var local_file = fs.createWriteStream(local_file_location + '.zip');
-        var ghURL = 'https://github.com/' + username + '/' + repo + '/archive/' + branch;
+        var ghURL = path.join('https://github.com',username,repo,branch;
         var input = request(ghURL).pipe(local_file);
         log('...requesting: ' + ghURL);
         log('...saving to location: ' + local_file_location + '.zip');
@@ -84,24 +68,22 @@ function factory(root, options) {
         input.on('close', function() {
             var cmd = 'unzip -o -d ' + tmp_dir + ' ' + local_file_location + '.zip';
             log('...executing: ' + cmd);
-            var child = exec(cmd, function(err, stdout, stderr) {
+            exec(cmd, function(err, stdout, stderr) {
                 if (!err) {
-                    // Walk the new file
-                    var findDir = (repo + '-' + branch).replace(/\.zip$/, '');
-
-                    log('...creating finder for dir: ' + findDir);
-                    var finder = findit(findDir);
-                    var expr = new RegExp('^' + findDir + '/');
-                    finder.on('file', function (file, stat) {
-                        archive.append(fs.createReadStream(file), { name: file.replace(expr,'') });
-                    });
-                    finder.on('directory', function(dir, state) {
-                        archive.append(null, { name: dir.replace(expr,'') });
-                    });
-                    finder.on('end', function() {
-                        log('...zip is finalizing');
-                        archive.finalize();
-                    });
+                    var repoBranchRoot = (repo + '-' + branch).replace(/\.zip$/, '');
+                    var finalzip = tmp_dir + '/' + repoBranchRoot + '.zip';
+                    var cmd2 = 'zip -r ' + finalzip + ' ' + path.join(tmp_dir,repoBranchRoot, '*');
+                    log('...executing: ' + findDir);
+                    exec(cmd2, function(err) {
+                        if (!err) {
+                            log('...zip successful, opening read stream to: ' + finalzip);
+                            fs.createReadStream(finalzip).pipe(res);
+                        } else {
+                            log('...ERROR: could not perform zip operation.');
+                            res.status(500);
+                            res.end();
+                        }
+                    })
 
                 } else {
                     console.warn('...ERROR! unzip command errored: ' + stderr);
