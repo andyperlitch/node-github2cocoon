@@ -54,12 +54,14 @@ function factory(root, options) {
             branch = result[3];
         }
 
+        branch = branch.replace(/\.zip$/, '');
+
         log('[' + new Date().toString() + '] Zip file requested for: github.com/' + username + '/' + repo + '/archive/' + branch );
 
         // Get input, pipe to file
         var local_file_location = tmp_dir + '/' + username + '-' + repo + '-' + branch + '-' + Date.now();
         var local_file = fs.createWriteStream(local_file_location + '.zip');
-        var ghURL = path.join('https://github.com',username,repo,branch;
+        var ghURL = 'https://github.com/'+username+'/'+repo+'/archive/'+branch+'.zip';
         var input = request(ghURL).pipe(local_file);
         log('...requesting: ' + ghURL);
         log('...saving to location: ' + local_file_location + '.zip');
@@ -70,10 +72,10 @@ function factory(root, options) {
             log('...executing: ' + cmd);
             exec(cmd, function(err, stdout, stderr) {
                 if (!err) {
-                    var repoBranchRoot = (repo + '-' + branch).replace(/\.zip$/, '');
+                    var repoBranchRoot = repo + '-' + branch;
                     var finalzip = tmp_dir + '/' + repoBranchRoot + '.zip';
-                    var cmd2 = 'zip -r ' + finalzip + ' ' + path.join(tmp_dir,repoBranchRoot, '*');
-                    log('...executing: ' + findDir);
+                    var cmd2 = 'zip -r ' + finalzip + ' ' + tmp_dir + '/' + repoBranchRoot +'/*';
+                    log('...executing: ' + cmd2);
                     exec(cmd2, function(err) {
                         if (!err) {
                             log('...zip successful, opening read stream to: ' + finalzip);
@@ -92,10 +94,6 @@ function factory(root, options) {
                 }
             });
         });
-
-        // Pipe archive to output
-        log('...piping archive to response');
-        archive.pipe(res);
     }
 
 }
