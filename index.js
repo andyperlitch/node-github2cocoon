@@ -86,6 +86,9 @@ function factory(root, options) {
                     finder.on('file', function (file, stat) {
                         archive.append(fs.createReadStream(file), { name: file.replace(expr,'') });
                     });
+                    finder.on('directory', function(dir, state) {
+                        archive.append(null, { name: dir.replace(expr,'') });
+                    });
                     finder.on('end', function() {
                         log('...zip is finalizing');
                         archive.finalize();
